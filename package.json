@@ -1,5 +1,5 @@
 {
-  "name": "@robster0/muxjs",
+  "name": "muxjs-http",
   "version": "1.0.0",
   "description": "Javascript web framework inspired by the package mux in Go",
   "main": "muxjs.js",
