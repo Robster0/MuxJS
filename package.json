@@ -1,0 +1,19 @@
+{
+  "name": "muxjs",
+  "version": "1.0.0",
+  "description": "Javascript web framework inspired by the package mux in Go",
+  "main": "muxjs.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Robster0/MuxJS.git"
+  },
+  "author": "robster0",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Robster0/MuxJS/issues"
+  },
+  "homepage": "https://github.com/Robster0/MuxJS"
+}
