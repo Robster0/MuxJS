@@ -1,8 +1,8 @@
 {
   "name": "muxjs-http",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Javascript web framework inspired by the package mux in Go",
-  "main": "MuxJS/muxjs.js",
+  "main": "muxjs.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
