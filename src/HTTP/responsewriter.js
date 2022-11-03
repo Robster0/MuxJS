@@ -4,17 +4,19 @@ const Encode = require('../Encode/encode');
 class ResponseWriter {
 
     #writer
+    #method
     #headers
     #statusCode
-    constructor(writer) {
+    constructor(writer, method) {
        this.#writer = writer;
+       this.#method = method
        this.#headers = '';
        this.#statusCode = null;
     }
 
     /**
     * Set response headers. Will only be exist for the current request.
-    * @param {string} headers
+    * @param {object} headers
     */
     SetHeaders(headers) {
         try
@@ -23,7 +25,7 @@ class ResponseWriter {
 
             for(const [key, value] of Object.entries(headers)) {
     
-                if(this.#headers.match(new RegExp(key))) {
+                if(this.#headers.match(new RegExp(key)) && key !== 'Set-Cookie') {
 
                     const data = this.#headers.split(/\r\n/).filter(e => e)
                     
@@ -54,7 +56,7 @@ class ResponseWriter {
         {
             if(typeof body !== 'string') throw new TypeError(`Body parameter is of wrong type, expected string but is ${typeof body}`);
 
-            const buffer = Encode.ToBuffer(this.#SetHeaders(body))
+            const buffer = Encode.ToBuffer(this.#SetResponse(body))
 
             this.#statusCode = null;
             this.#writer.write(buffer)
@@ -81,7 +83,7 @@ class ResponseWriter {
                 'Content-Type': 'application/json'
             })
 
-            const buffer = Encode.ToBuffer(this.#SetHeaders(JSON.stringify(body)));
+            const buffer = Encode.ToBuffer(this.#SetResponse(JSON.stringify(body)));
 
             this.#statusCode = null;
             this.#writer.write(buffer)
@@ -98,7 +100,7 @@ class ResponseWriter {
     * Sends a file to the request endpoint
     * @param {string} filepath path to the file you want to upload
     */
-    async SendFile(filepath) {
+    SendFile(filepath) {
         try
         {
             if(typeof filepath !== 'string') throw new TypeError(`Filepath parameter is of wrong type, expected string but is ${typeof filepath}`);
@@ -127,7 +129,7 @@ class ResponseWriter {
             this.SetHeaders({'Content-Type': contentType})
             this.SetHeaders({'accept-ranges': 'bytes'})
 
-            const res = Encode.ToBuffer(this.#SetHeaders(data, true), encodingType);
+            const res = Encode.ToBuffer(this.#SetResponse(data, true), encodingType);
             
             this.#statusCode = null;
 
@@ -145,6 +147,78 @@ class ResponseWriter {
     }
 
     /**
+    * Sends a cookie to the request endpoint
+    * @param {string} name name of the cookie
+    * @param {string} value value of the cookie
+    * @param {object} attributes cookie attributes, default value for the ExpiresIn attribute is 24 hours
+    */
+    Cookie(name, value, attributes) {
+        try
+        {
+            if(typeof name !== 'string')throw new TypeError(`name parameter is of wrong type, expected string but is ${typeof name}`);
+
+            if(typeof value !== 'string')throw new TypeError(`value parameter is of wrong type, expected string but is ${typeof value}`);
+    
+            if(typeof attributes !== 'object')throw new TypeError(`attributes parameter is of wrong type, expected object but is ${typeof attributes}`);
+
+            let cookie = name+'='+(attributes.base64 ? btoa(value) : value)
+
+            //Attributes
+            if(typeof attributes.ExpiresIn === 'number')
+                cookie += `; Expires=${new Date(Date.now() + attributes.ExpiresIn).toUTCString()}`
+            else 
+                cookie += `; Expires=${new Date(Date.now() + 1000 * 60 * 60 * 24).toUTCString()}`
+    
+            if(typeof attributes.HttpOnly === 'boolean' && attributes.HttpOnly)
+                cookie += '; HttpOnly'
+            if(typeof attributes.Secure === 'boolean' && attributes.Secure)
+                cookie += '; Secure'
+    
+            if(typeof attributes.Domain === 'string')
+                cookie += '; Domain='+attributes.Domain
+
+            switch(attributes?.SameSite?.toLowerCase()) 
+            {
+                case 'strict':
+                    cookie += '; SameSite=Strict'
+                    break;
+                case 'lax':
+                    cookie += '; SameSite=Lax'
+                    break;
+                case 'none':
+                    cookie += '; SameSite=None'
+                    break;
+            }
+                
+            cookie += '; Path='+(attributes.Path ?? '/')
+            cookie += '; SameSite='+(attributes.SameSite ?? 'None')
+
+            this.SetHeaders({
+                'Set-Cookie': cookie
+            })     
+        }
+        catch(err)
+        {
+            console.log(err)
+        }
+    }
+
+    /**
+    * Removes a cookie
+    * @param {string} name name of the cookie
+    * @param {object} attributes cookie attributes
+    */
+    ClearCookie(name) {
+        if(typeof name !== 'string')throw new TypeError(`name parameter is of wrong type, expected string but is ${typeof name}`);
+
+        let cookie = `${name}=; Expires=${new Date(0).toUTCString()}`
+
+        this.SetHeaders({
+            'Set-Cookie': cookie
+        })
+    }
+
+    /**
     * Sends only a status code back to the request endpoint
     * @param {number} code 
     */
@@ -155,7 +229,7 @@ class ResponseWriter {
 
             this.#statusCode = code;
 
-            const buffer = Encode.ToBuffer(this.#SetHeaders(''))
+            const buffer = Encode.ToBuffer(this.#SetResponse(''))
 
             this.#statusCode = null;
             this.#writer.write(buffer)
@@ -202,7 +276,7 @@ class ResponseWriter {
             })
 
             this.#statusCode = 303;
-            const buffer = Encode.ToBuffer(this.#SetHeaders(''))
+            const buffer = Encode.ToBuffer(this.#SetResponse(''))
 
             this.#statusCode = null;
             this.#writer.write(buffer)
@@ -218,7 +292,7 @@ class ResponseWriter {
     #OnError() {
         try
         {
-            const res = Encode.ToBuffer(this.#SetHeaders(''));
+            const res = Encode.ToBuffer(this.#SetResponse(''));
             this.#statusCode = null;
             this.#writer.write(res)
             this.#writer.end();
@@ -229,21 +303,22 @@ class ResponseWriter {
         }
     }
 
-    #SetHeaders(body, buf = false) {
+    #SetResponse(body, buf = false) {
         try
         {   
-             let response_header = ``
- 
-             response_header += `HTTP/1.1 ${this.#statusCode === null ? 200 : this.#statusCode}\r\n`
-             response_header += `Date: ${new Date().toUTCString()}\r\n`
+            let response_header = ``
 
-             response_header += `Connection: keep-alive\r\n`
-             response_header += `Content-Length: ${buf ? body.length : Encode.ToBuffer(body).length}\r\n`
+            response_header += `HTTP/1.1 ${!this.#statusCode ? 200 : this.#statusCode}\r\n`
+            response_header += `Date: ${new Date().toUTCString()}\r\n`
+            response_header += 'X-Powered-By: MuxJS\r\n'
+            response_header += `Connection: keep-alive\r\n`
+            response_header += `Content-Length: ${buf ? body.length : Encode.ToBuffer(body).length}\r\n`
+            response_header += this.#headers
 
-             response_header += this.#headers
-             response_header += `\r\n${body}`
- 
-             return response_header;
+            if(this.#method !== 'HEAD')
+                response_header += `\r\n${body}`
+
+            return response_header;
         }
         catch(err)
         {

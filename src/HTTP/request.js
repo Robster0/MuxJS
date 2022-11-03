@@ -7,11 +7,14 @@ class Request {
  
         this.Params = {}
         this.Query = {} 
+        this.Cookies = {}
+        this.Options = {}
 
-        if (this.Method === 'POST') {
-            this.Body = {}
-            this.Files = {}
-        }
+        if (this.Method === 'GET') return
+        
+        this.Body = {}
+        this.Files = {}
+        this.Raw = ''
     }
 }
 
