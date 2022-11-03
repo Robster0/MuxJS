@@ -168,12 +168,12 @@ class MuxJS
             {
                 for(let i = 0; i<this.#origins.length; i++)
                 {
-                    if(this.#origins[i] === r.Headers.Origin)
-                    {
-                        w.SetHeaders({
-                            'Access-Control-Allow-Origin': r.Headers.Origin
-                        })
-                    }
+                    if(this.#origins[i] !== r.Headers.Origin) continue
+
+                    
+                    w.SetHeaders({
+                        'Access-Control-Allow-Origin': r.Headers.Origin
+                    })
                 }
 
                 const methods = this.#headers['Access-Control-Allow-Methods']?.split(', ')
