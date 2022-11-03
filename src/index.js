@@ -1,10 +1,10 @@
 //!                                                                             !\\
 //*  │‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾│  *\\
 //*  │                                                                       │  *\\
-//*  │                       For more information visit:                     │  *\\
+//*  │                      For more information visit:                      │  *\\
 //*  │                                                                       │  *\\
-//*  │                    https://github.com/Robster0/MuxJS                  │  *\\ 
-//*  │                 https://www.npmjs.com/package/muxjs-http              │  *\\
+//*  │               https://www.npmjs.com/package/muxjs-http                │  *\\ 
+//*  │       https://github.com/Robster0/MuxJS/tree/beta/demonstration       │  *\\
 //*  │                                                                       │  *\\
 //*  │_______________________________________________________________________│  *\\
 //!                                                                             !\\
