@@ -73,6 +73,30 @@ function del(w, r) {
     w.SendStatus(200)
 }
 
+
+//Middlewares. Contrary to the standard 2 parameters, middleware functions takes in 3 (w, r, next)
+function middleware(w, r, next) {
+    //Stops the next middleware from getting called
+    if(error === true) return;
+
+
+    //Do something cool here...
+
+
+    //Calls the next middleware/handler
+    next.Serve(w, r)
+}
+
+//Will only get called if the url path begins with '/crud' (since these middlewares was initialized on a subroute that has '/crud' as a pathprefix)
+function crudMiddleware1(w, r, next) {
+
+    next.Serve(w, r)
+}
+function crudMiddleware2(w, r, next) {
+    
+    next.Serve(w, r)
+}
+
 //NotFoundHandlers. Triggers on every path except on handlers that contain that path or if a child NotFoundHandler could be triggered
 function error(w, r) {
     w.SendStatus(404)

@@ -1,5 +1,10 @@
 /*
 * No runnable code here just a very simple documentation
+
+!Important:
+w parameter: ResponseWriter
+r parameter: Request
+next parameter: calls the next middleware or handler 
 */
 
 
@@ -84,6 +89,9 @@ const r = MuxJS.NewRouter();
 //basic handler, home (function) triggers on path: '/' and method: 'GET'. 
 r.HandleFunc('/', home).Method('GET')
 
+//Middleware, functions that will be called before the actual handler, will trigger on any child sub route but never on any parent route
+r.Use(middleware)
+
 //Catch-all handler
 r.NotFoundHandler(error)
 
@@ -111,6 +119,10 @@ r_auth.NotFoundHandler(auth_error)
 
 //Initializes another sub router
 const r_crud = r.SubRouter().PathPrefix('/crud')
+
+//create middlewares
+r_crud.Use(crudMiddleware1)
+r_crud.Use(crudMiddleware2)
 
 
 r_crud.HandleFunc('/read', read).Method('GET')
