@@ -1,10 +1,10 @@
+/*
+* No runnable code here just a very simple documentation
+*/
+
+
 //Instance
-const MuxJS = require('../src/index');
-const fs = require('fs')
-
-const { read, readOne, create_GET, create_POST, update, del } = require('./handlers/CRHandlers')
-const { home, error } = require('./handlers/indexHandlers')
-
+const MuxJS = require('muxjs-http')//npm 
 
 //Starts a server at specified port
 MuxJS.ListenAndServe(3000, (err) => {
@@ -17,6 +17,19 @@ MuxJS.ListenAndServe(3000, (err) => {
 //Load static files. Image, css, javascript files, etc.
 MuxJS.FileServer(__dirname + '/static')
 
+
+/*
+
+Set options, 
+
+options shown are currently the only ones supported
+
+RawProperty: removes the Raw property (contains the entire body before parsing) from the request parameter if set false
+
+limit: sets a size limit (in bytes) for incoming files, -1 allows everything
+output: sets the output type for the file data, either 'buffer' or 'string'
+
+*/
 MuxJS.Options({
     RawProperty: false,
     FileUpload: {
@@ -26,16 +39,10 @@ MuxJS.Options({
 })
 
 /*
-    Add built in muxjs function/options that helps with common problems.
-
-    Size limit for files and method override is currently the only option available
-*/
-
-/*
     Add Access-Control-Allow headers
 */
 MuxJS.CORS({
-    origins: ['http://localhost:3000', 'http://localhost:3001'],
+    origins: ['https://github.com/Robster0/MuxJS', 'https://www.npmjs.com/package/muxjs-http'],
     methods: 'GET, POST, OPTIONS, PUT, DELETE',
     credentials: true,
     headers: '*'
@@ -56,33 +63,60 @@ MuxJS.PreFlight((w, r) => {
     w.SendStatus(200);
 })
 
-MuxJS.Deploy(MuxJS.Json())//Parse json payloads
+/*
+
+Deploy resources needed for the application to work, e.g. parsing
+third party resources are currently not supported even tho the description say this  
+
+*/
+MuxJS.Deploy(MuxJS.Json())//Parse json data
 MuxJS.Deploy(MuxJS.Cookies())//Parse incoming cookies
-MuxJS.Deploy(MuxJS.XmlParser())//Parse xml payloads, NOTE, should only be used with simple xml
-MuxJS.Deploy(MuxJS.FileUpload())//Parse binary data into writable files
-MuxJS.Deploy(MuxJS.UrlEncoded())//Parse urlencoded payloads
+MuxJS.Deploy(MuxJS.XmlParser())//Parse xml data, NOTE: should only be used with simple xml
+MuxJS.Deploy(MuxJS.FileUpload())//Parses binary data from files 
+MuxJS.Deploy(MuxJS.UrlEncoded())//Parse urlencoded data
 MuxJS.Deploy(MuxJS.MethodOverride())// Checks for the _method query string and changes the request method to either PUT or DELETE
-MuxJS.Deploy(MuxJS.MultiPartFormData())//Parses Multipartformdata
+MuxJS.Deploy(MuxJS.MultiPartFormData())//Parses Multipart form-data
 
 
 //Initializes root router
 const r = MuxJS.NewRouter();
 
-r.NotFoundHandler(error)
-
-
-//Root router handler
+//basic handler, home (function) triggers on path: '/' and method: 'GET'. 
 r.HandleFunc('/', home).Method('GET')
 
-//Initializes a sub router with /crud as pathprefix
+//Catch-all handler
+r.NotFoundHandler(error)
+
+//Initializes a sub router with /api as pathprefix
+const r_api = r.SubRouter().PathPrefix('/api')
+
+//Sub route handler, triggers on the path /api/book/{anything}/{anything}
+r_api.HandleFunc('/book/{author}/{title}', jsondata).Method('GET')
+
+
+//Initializes a nested sub route where the path will now be '/api/json'
+const r_json = r_api.SubRouter().PathPrefix('/json')
+
+//API catch-all handler (not technically needed)
+r_api.NotFoundHandler(api_error)
+
+//Initializes another sub router
+const r_auth = r.SubRouter().PathPrefix('/auth')
+
+r_auth.HandleFunc('/signout', signout).Method('GET')
+r_auth.HandleFunc('/validate', validate).Method('GET')
+
+//Auth catch-all handler (not technically needed)
+r_auth.NotFoundHandler(auth_error)
+
+//Initializes another sub router
 const r_crud = r.SubRouter().PathPrefix('/crud')
 
-//crud handlers
+
 r_crud.HandleFunc('/read', read).Method('GET')
-r_crud.HandleFunc('/read/{id}', readOne).Method('GET')
+r_crud.HandleFunc('/create', create).Method('POST')
+r_crud.HandleFunc('/update', update).Method('PUT')
+r_crud.HandleFunc('/delete', del).Method('DELETE')
 
-r_crud.HandleFunc('/create', create_GET).Method('GET')
-r_crud.HandleFunc('/create', create_POST).Method('POST')
-
-r_crud.HandleFunc('/update', update).Method('PUT');
-r_crud.HandleFunc('/delete', del).Method('DELETE');
+//Crud catch-all handler (not technically needed)
+r_crud.NotFoundHandler(crud_error)
