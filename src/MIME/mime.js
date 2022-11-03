@@ -34,5 +34,12 @@ const Mimes = {
     'image/x-xwindowdump': 'xwd'
 }
 
+const BodyParserMimes = {
+    'mulitpart/form-data': 1,
+    'application/json': 1,
+    'application/x-www-form-urlencoded': 1,
+    'application/xml': 1,
+}
 
-module.exports = Mimes;
+
+module.exports = { Mimes, BodyParserMimes };
