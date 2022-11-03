@@ -47,6 +47,9 @@ function read(w, r) {
     </body>
     </html>`
 
+
+    w.Cookie('test', 'epic value', {HttpOnly: true, Secure: true, Path: '/crud/read'})
+
     
 
     w.Send(html)
@@ -80,11 +83,11 @@ function readOne(w, r) {
                     <img src="${post.path}" alt="" width="300px" height="300px">
                     <div style="display: flex; gap: 10px;">
                         <a title="open update form" id="update" style="color: white; height: 20px; z-index: 2;">Update</a>
-                        <a href="/crud/delete?id=${post.id}&$method=DELETE" title="delete this post" id="delete" style="color: white; height: 20px; z-index: 2;"><i class="fa-solid fa-trash-can"></i></a>
+                        <a href="/crud/delete?id=${post.id}&_method=DELETE" title="delete this post" id="delete" style="color: white; height: 20px; z-index: 2;"><i class="fa-solid fa-trash-can"></i></a>
                     </div>
                 </div>
 
-                <form action="/crud/update?id=${post.id}&$method=PUT" class="form hide" style="margin-top: 100px;" method="post" enctype="multipart/form-data">
+                <form action="/crud/update?id=${post.id}&_method=PUT" class="form hide" style="margin-top: 100px;" method="post" enctype="multipart/form-data">
                     <input type="text" name="name" placeholder="name">
                     <textarea name="desc" id="desc" cols="20" rows="10" placeholder="description"></textarea>
                     <input type="file" name="image" id="file">
@@ -94,7 +97,6 @@ function readOne(w, r) {
         </body>
         </html>
     `
-
 
     w.Send(html)
 }
@@ -135,6 +137,8 @@ function create_POST(w, r) {
 
 function update(w, r) {
 
+    console.log(r)
+
     if(Object.keys(r.Files).length < 1) return w.Redirect('/error')
 
     let extension = r.Files.image.name.split('.')
@@ -173,6 +177,8 @@ function update(w, r) {
 }
 
 function del(w, r) {
+
+    console.log(r)
     const dbPath = path.join(__dirname, '../db.json')
     const buffer = fs.readFileSync(dbPath)
 
