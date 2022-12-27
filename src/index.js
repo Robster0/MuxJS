@@ -168,13 +168,25 @@ class MuxJS
             {
                 for(let i = 0; i<this.#origins.length; i++)
                 {
-                    if(this.#origins[i] === r.Headers.Origin)
-                    {
-                        w.SetHeaders({
-                            'Access-Control-Allow-Origin': r.Headers.Origin
-                        })
-                    }
+                    if(this.#origins[i] !== r.Headers.Origin) continue
+
+                    
+                    w.SetHeaders({
+                        'Access-Control-Allow-Origin': r.Headers.Origin
+                    })
                 }
+
+                const methods = this.#headers['Access-Control-Allow-Methods']?.split(', ')
+
+                if(!methods) return w.SendStatus(405)
+                
+                let allowed = false
+
+                for(let i = 0; i<methods.length; i++)
+                    if(methods[i] === r.Method)
+                        allowed = true
+
+                if(!allowed) return w.SendStatus(405)
             }
     
             if(r.Method === "OPTIONS" && this.#preflight !== null)
