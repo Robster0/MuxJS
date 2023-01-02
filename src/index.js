@@ -42,7 +42,7 @@ class MuxJS
     #options
     #origins
 
-    #static
+    #fileServer
     #preflight
     #root
     #socket
@@ -71,7 +71,7 @@ class MuxJS
         this.#origins = []
 
         //Static folders and information
-        this.#static = { name: '', path: '',  content: [] }
+        this.#fileServer = []
         this.#preflight = null;
 
         this.Port = undefined;
@@ -193,16 +193,16 @@ class MuxJS
                 return this.#preflight(w, r)
     
     
-            if(this.#static.content.length > 0)
-                this.#FolderTraversal(this.#static.path, '/' + this.#static.name);
-    
+            for(let i = 0; i<this.#fileServer.length; i++)
+                if(r.Url.substring(0, this.#fileServer[i].root.length) === this.#fileServer[i].root) {
                     
-            for(let i = 0; i<this.#static.content.length; i++)
-            {
-                if(this.#static.content[i].urlpath !== r.Url) continue;
-                
-                return w.SendFile(this.#static.content[i].path)
-            }
+                    if(!fs.existsSync(this.#fileServer[i].path + r.Url)) continue 
+
+                    return w.SendFile(this.#fileServer[i].path + r.Url)
+                }
+                    
+
+            
     
             const url = r.Url.split('?');    
             let concluding_handlerPATH = '*';
@@ -344,24 +344,19 @@ class MuxJS
     }
 
     /** 
-    * Dynamically load static assets when the client requests them
-    * @param {string} path path to the static folder
+    * Dynamically serve static assets when the client requests them
+    * @param {string} path name of the folder, e.g. "static" or "public"
+    * @param {string} parent path to the directory of the 'path' argument,
+    * should only be added if the file calling this function isn't relative to the target directory
     */
-    FileServer(path) {
+    FileServer(path, parent = require.main.path) {
         try
         {
             if(typeof path !== 'string') throw new TypeError(`Path argument is of wrong type, expected string but is ${typeof path}`);
 
-            this.#static = { name: '', path: '', content: [] }
-
-            const getFolder = path.split('/')
-            const folder = getFolder[getFolder.length - 1];
-
-
-            this.#static.name = folder;
-            this.#static.path = path;
-            
-            this.#FolderTraversal(path, '/' + folder);
+            if(typeof parent !== 'string') throw new TypeError(`Parent argument is of wrong type, expected string but is ${typeof parent}`);
+               
+            this.#fileServer.push({root, path: parent})
         }
         catch(err)
         {
@@ -388,31 +383,6 @@ class MuxJS
             console.log(err)
         }
     }
-     
-    #FolderTraversal(path, urlpath = "") {
-        try
-        {        
-            fs.readdir(path, (err, files) => {
-                if(err) throw err;
-                
-                for(let i = 0; i<files.length; i++)
-                {
-                    const newpath = path + "/" + files[i];
-
-                    if(fs.lstatSync(newpath).isDirectory()) {
-                        this.#FolderTraversal(newpath, urlpath + "/" + files[i])
-                    } else {
-                        this.#static.content.push({path: newpath, urlpath: urlpath + "/" + files[i]});
-                    }           
-                }
-            })
-        }
-        catch(err)
-        {
-            console.log(err)
-        }
-    }
-
 
     #MethodOverride(w, r) {
         if(!r.Query['_method']) return
