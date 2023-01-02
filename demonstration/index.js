@@ -20,7 +20,7 @@ MuxJS.ListenAndServe(3000, (err) => {
 })
 
 //Load static files. Image, css, javascript files, etc.
-MuxJS.FileServer(__dirname + '/static')
+MuxJS.FileServer('static')
 
 
 /*
