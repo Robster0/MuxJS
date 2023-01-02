@@ -3,8 +3,8 @@
 //*  │                                                                       │  *\\
 //*  │                      For more information visit:                      │  *\\
 //*  │                                                                       │  *\\
-//*  │               https://www.npmjs.com/package/muxjs-http                │  *\\ 
-//*  │       https://github.com/Robster0/MuxJS/tree/beta/demonstration       │  *\\
+//*  │                https://www.npmjs.com/package/muxjs-http               │  *\\ 
+//*  │               https://github.com/robin-andreasson/MuxJS               │  *\\
 //*  │                                                                       │  *\\
 //*  │_______________________________________________________________________│  *\\
 //!                                                                             !\\
