@@ -17,6 +17,7 @@ function handler(w, r) {
 }
 ```
 
+# Installation
 ```
 $ npm install muxjs-http
 ```
