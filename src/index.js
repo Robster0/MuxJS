@@ -194,7 +194,7 @@ class MuxJS
     
     
             for(let i = 0; i<this.#fileServer.length; i++)
-                if(r.Url.substring(0, this.#fileServer[i].root.length) === this.#fileServer[i].root) {
+                if(r.Url.substring(1, this.#fileServer[i].root.length + 1) === this.#fileServer[i].root) {
                     
                     if(!fs.existsSync(this.#fileServer[i].path + r.Url)) continue 
 
@@ -345,14 +345,14 @@ class MuxJS
 
     /** 
     * Dynamically serve static assets when the client requests them
-    * @param {string} path name of the folder, e.g. "static" or "public"
-    * @param {string} parent path to the directory of the 'path' argument,
+    * @param {string} root name of the folder, e.g. "static" or "public"
+    * @param {string} parent path to the directory of the 'root' argument,
     * should only be added if the file calling this function isn't relative to the target directory
     */
-    FileServer(path, parent = require.main.path) {
+    FileServer(root, parent = require.main.path) {
         try
         {
-            if(typeof path !== 'string') throw new TypeError(`Path argument is of wrong type, expected string but is ${typeof path}`);
+            if(typeof root !== 'string') throw new TypeError(`Root argument is of wrong type, expected string but is ${typeof root}`);
 
             if(typeof parent !== 'string') throw new TypeError(`Parent argument is of wrong type, expected string but is ${typeof parent}`);
                
